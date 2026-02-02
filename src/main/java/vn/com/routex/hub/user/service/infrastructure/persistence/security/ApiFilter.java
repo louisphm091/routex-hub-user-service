@@ -7,10 +7,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Request;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import vn.com.routex.driver.service.application.RequestAttributes;
-import vn.com.routex.driver.service.interfaces.models.base.BaseRequest;
+import vn.com.routex.hub.user.service.application.RequestAttributes;
+import vn.com.routex.hub.user.service.interfaces.models.base.BaseRequest;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

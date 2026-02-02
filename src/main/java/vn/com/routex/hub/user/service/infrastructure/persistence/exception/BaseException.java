@@ -3,7 +3,7 @@ package vn.com.routex.hub.user.service.infrastructure.persistence.exception;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import vn.com.routex.driver.service.interfaces.models.result.ApiResult;
+import vn.com.routex.hub.user.service.interfaces.models.result.ApiResult;
 
 @Data
 @Builder(toBuilder = true)

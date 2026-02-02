@@ -1,7 +1,7 @@
 package vn.com.routex.hub.user.service.infrastructure.persistence.exception;
 
 import lombok.EqualsAndHashCode;
-import vn.com.routex.driver.service.interfaces.models.result.ApiResult;
+import vn.com.routex.hub.user.service.interfaces.models.result.ApiResult;
 
 @EqualsAndHashCode(callSuper = true)
 public class BusinessException extends BaseException {
@@ -10,5 +10,7 @@ public class BusinessException extends BaseException {
         super(requestId, requestDateTime, channel, result);
     }
 
-    public BusinessException(ApiResult result) { super(result); }
+    public BusinessException(ApiResult result) {
+        super(result);
+    }
 }
