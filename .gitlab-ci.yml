@@ -1,49 +1,150 @@
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
-
-# This is a sample GitLab CI/CD configuration file that should run without any modifications.
-# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
-# it uses echo commands to simulate the pipeline execution.
-#
-# A pipeline is composed of independent jobs that run scripts, grouped into stages.
-# Stages run in sequential order, but jobs within stages run in parallel.
-#
-# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
-
-stages:          # List of stages for jobs, and their order of execution
+stages:
+  - verify
+  - tag
   - build
-  - test
-  - deploy
+  - gitops
 
-include:
-  - template: Security/Dependency-Scanning.gitlab-ci.yml
+variables:
+  GIT_DEPTH: "0"
+  DOCKER_BUILDKIT: "1"
+  DOCKER_TLS_CERTDIR: ""
 
-build-job:       # This job runs in the build stage, which runs first.
+# -------------------------
+# 0) VERIFY BUILD for Merge Request (no push, no tag)
+# -------------------------
+verify_build:
+  stage: verify
+  image: maven:3.9-eclipse-temurin-21
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  script:
+    - mvn -q -DskipTests package
+
+# -------------------------
+# 1) AUTO TAG (only master push)
+# -------------------------
+auto_tag:
+  stage: tag
+  image: alpine:3.20
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE == "push"'
+  before_script:
+    - apk add --no-cache git bash
+    - git config user.email "routex@orion-hub"
+    - git config user.name "routex-bot"
+    # no-progress giúp log ổn định hơn
+    - git fetch --tags --force --prune --no-progress
+  script: |
+    set -euo pipefail
+
+    # Tránh SIGPIPE 141: head đóng pipe sớm => thêm || true
+    LAST_TAG="$(git tag -l "v*" --sort=-v:refname | head -n 1 || true)"
+    if [ -z "${LAST_TAG}" ]; then LAST_TAG="v0.0.0"; fi
+
+    VERSION="${LAST_TAG#v}"
+    MAJOR="$(echo "$VERSION" | cut -d. -f1)"
+    MINOR="$(echo "$VERSION" | cut -d. -f2)"
+    PATCH="$(echo "$VERSION" | cut -d. -f3)"
+
+    PATCH="$((PATCH + 1))"
+    NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+    echo "$NEW_TAG" > tag.txt
+    echo "NEW_TAG=$NEW_TAG"
+
+    # Nếu tag đã tồn tại (race condition), fail sớm rõ ràng
+    if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
+      echo "Tag $NEW_TAG already exists. Please re-run pipeline (or bump logic)."
+      exit 1
+    fi
+
+    git tag -a "$NEW_TAG" -m "CI release $NEW_TAG"
+
+    # Project Access Token
+    git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
+    # Retry push (phòng network hiccup)
+    for i in 1 2 3; do
+      if git push origin "$NEW_TAG"; then
+        echo "Pushed tag $NEW_TAG"
+        break
+      fi
+      echo "Push failed, retry $i..."
+      sleep $((i * 2))
+      git fetch --tags --force --prune --no-progress
+      if [ "$i" -eq 3 ]; then
+        echo "Failed to push tag after retries."
+        exit 1
+      fi
+    done
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - tag.txt
+
+# -------------------------
+# 2) BUILD & PUSH IMAGE (master only)
+# -------------------------
+build_push_image:
   stage: build
-  script:
-    - echo "Compiling the code..."
-    - echo "Compile complete."
+  image: docker:27
+  services:
+    - name: docker:27-dind
+  needs:
+    - job: auto_tag
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE == "push"'
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script: |
+    set -euo pipefail
+    TAG="$(cat tag.txt)"
+    echo "Build & push image: $CI_REGISTRY_IMAGE:$TAG"
 
-unit-test-job:   # This job runs in the test stage.
-  stage: test    # It only starts when the job in the build stage completes successfully.
-  script:
-    - echo "Running unit tests... This will take about 60 seconds."
-    - sleep 60
-    - echo "Code coverage is 90%"
+    docker build -t "$CI_REGISTRY_IMAGE:$TAG" .
+    docker push "$CI_REGISTRY_IMAGE:$TAG"
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - tag.txt
 
-lint-test-job:   # This job also runs in the test stage.
-  stage: test    # It can run at the same time as unit-test-job (in parallel).
-  script:
-    - echo "Linting code... This will take about 10 seconds."
-    - sleep 10
-    - echo "No lint issues found."
+# -------------------------
+# 3) UPDATE GITOPS VALUES (master only)
+# -------------------------
+update_gitops_values_dev:
+  stage: gitops
+  image: alpine:3.20
+  needs:
+    - job: build_push_image
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE == "push"'
+  before_script:
+    - apk add --no-cache git yq
+  script: |
+    set -euo pipefail
+    : "${GITOPS_REPO_URL:?GITOPS_REPO_URL is not set}"
+    : "${GITOPS_PUSH_TOKEN:?GITOPS_PUSH_TOKEN is not set}"
 
-deploy-job:      # This job runs in the deploy stage.
-  environment: production 
-  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
-  script:
-    - echo "Deploying application..."
-    - echo "Application successfully deployed."
+    TAG="$(cat tag.txt)"
+    export TAG
+
+    VALUES_PATH="deployment-config/service/${CI_PROJECT_NAME}/values-dev.yaml"
+
+    git clone "https://oauth2:${GITOPS_PUSH_TOKEN}@${GITOPS_REPO_URL}" gitops
+    cd gitops
+
+    git config user.email "routex@orion-hub"
+    git config user.name "routex-bot"
+
+    test -f "$VALUES_PATH"
+
+    yq -i '.image.repository = strenv(CI_REGISTRY_IMAGE)' "$VALUES_PATH"
+    yq -i '.image.tag = strenv(TAG)' "$VALUES_PATH"
+
+    git add "$VALUES_PATH"
+    git commit -m "chore(gitops): ${CI_PROJECT_NAME} -> ${TAG} (dev)" || echo "No changes"
+
+    # rebase trước push để tránh non-fast-forward
+    git pull --rebase origin master
+    git push origin master

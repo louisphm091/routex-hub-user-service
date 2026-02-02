@@ -1,3 +1,66 @@
 spring:
   application:
-    name: ecom-hub-user-service
+    name: routex-hub-driver-service
+
+  threads:
+    virtual:
+      enabled: true
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/routex}
+    username: ${SPRING_DATASOURCE_USERNAME:routex}
+    password: ${SPRING_DATASOURCE_PASSWORD:routex@2026}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+
+  security:
+    user:
+      name: ${SPRING_SECURITY_USER_NAME:admin}
+      password: ${SPRING_SECURITY_USER_PASSWORD:admin}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+ibm:
+  mq:
+    host: ${IBM_MQ_HOST:localhost}
+    port: ${IBM_MQ_PORT:1414}
+    user: ${IBM_MQ_USER:app}
+    password: ${IBM_MQ_PASSWORD:}
+    channel: ${IBM_MQ_CHANNEL:SMARTPAY.OMNI.APP}
+    queueManager: ${IBM_MQ_QUEUE_MANAGER:smartpay}
+    concurrency: ${IBM_MQ_CONCURRENCY:12-60}
+
+jms:
+  thread:
+    receive:
+      timeout-seconds: ${JMS_THREAD_RECEIVE_TIMEOUT_SECONDS:30}
+    send:
+      timeout-seconds: ${JMS_THREAD_SEND_TIMEOUT_SECONDS:5}
+  receive:
+    timeout: ${JMS_RECEIVE_TIMEOUT:30000}
+  caching:
+    session-cache-size: ${JMS_CACHING_SESSION_CACHE_SIZE:256}
+  time-to-live-milliseconds: ${JMS_TIME_TO_LIVE_MILLISECONDS:20000}
+  recovery-interval: ${JMS_RECOVERY_INTERVAL:5000}
+  max-message: ${JMS_MAX_MESSAGE:1}
+
+server:
+  port: ${SERVER_PORT:8888}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
