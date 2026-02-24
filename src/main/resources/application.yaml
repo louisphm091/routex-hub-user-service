@@ -1,13 +1,35 @@
 spring:
+
   application:
-    name: routex-hub-driver-service
+    name: routex-hub-user-service
 
   threads:
     virtual:
       enabled: true
 
+  kafka:
+    # K8s: set KAFKA_BOOTSTRAP_SERVERS = kafka:9092 (hoặc service của bạn)
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:driver-service}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "vn.com.*"
+
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/routex}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/routexhub}
     username: ${SPRING_DATASOURCE_USERNAME:routex}
     password: ${SPRING_DATASOURCE_PASSWORD:routex@2026}
     driver-class-name: org.postgresql.Driver
@@ -17,6 +39,10 @@ spring:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
     show-sql: ${SPRING_JPA_SHOW_SQL:false}
+
+  jackson:
+    mapper:
+      sort-properties-alphabetically: false
 
   security:
     user:
@@ -34,16 +60,6 @@ management:
     readinessstate:
       enabled: true
 
-ibm:
-  mq:
-    host: ${IBM_MQ_HOST:localhost}
-    port: ${IBM_MQ_PORT:1414}
-    user: ${IBM_MQ_USER:app}
-    password: ${IBM_MQ_PASSWORD:}
-    channel: ${IBM_MQ_CHANNEL:SMARTPAY.OMNI.APP}
-    queueManager: ${IBM_MQ_QUEUE_MANAGER:smartpay}
-    concurrency: ${IBM_MQ_CONCURRENCY:12-60}
-
 jms:
   thread:
     receive:
@@ -59,7 +75,7 @@ jms:
   max-message: ${JMS_MAX_MESSAGE:1}
 
 server:
-  port: ${SERVER_PORT:8888}
+  port: ${SERVER_PORT:8000}
 
 logging:
   level:
