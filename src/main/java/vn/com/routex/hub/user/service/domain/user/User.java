@@ -61,7 +61,7 @@ public class User extends AbstractAuditingEntity {
     @Column(nullable = false)
     private UserRoles role;
 
-    @Column(name = "TENANT_ID", nullable = false)
+    @Column(name = "TENANT_ID")
     private String tenantId;
 
     @Column(name = "LANGUAGE", nullable = false)
@@ -70,12 +70,12 @@ public class User extends AbstractAuditingEntity {
     @Column(name = "TIME_ZONE", nullable = false)
     private String timezone;
 
-    @Column(name = "FAIL_LOGIN_COUNT", nullable = false)
+    @Column(name = "FAIL_LOGIN_COUNT")
     private Integer failLoginCount = 0;
 
-    @Column(name = "LAST_LOGIN_AT", nullable = false)
+    @Column(name = "LAST_LOGIN_AT")
     private OffsetDateTime lastLoginAt;
 
-    @Column(name = "LOCKED_UNTIL", nullable = false)
+    @Column(name = "LOCKED_UNTIL")
     private OffsetDateTime lockedUntil;
 }

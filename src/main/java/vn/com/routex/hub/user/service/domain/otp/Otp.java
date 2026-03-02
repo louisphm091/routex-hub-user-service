@@ -34,6 +34,9 @@ public class Otp {
     @Column(name = "PHONE_NUMBER", nullable = false)
     private String phoneNumber;
 
+    @Column(name = "EMAIL", nullable = false)
+    private String email;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "PURPOSE", nullable = false)
     private OtpPurpose purpose;
@@ -41,12 +44,15 @@ public class Otp {
     @Column(name = "OTP_HASH", nullable = false)
     private String otpHash;
 
+    @Column(name = "PRODUCED_AT", nullable = false)
+    private OffsetDateTime producedAt;
+
     @Column(name = "ATTEMPT_COUNT", nullable = false)
     private Integer attemptCount = 0;
 
     @Column(name = "EXPIRED_AT", nullable = false)
     private OffsetDateTime expiredAt;
 
-    @Column(name = "CONSUMED_AT", nullable = false)
+    @Column(name = "CONSUMED_AT")
     private OffsetDateTime consumedAt;
 }

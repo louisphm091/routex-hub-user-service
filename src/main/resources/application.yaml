@@ -75,7 +75,11 @@ jms:
   max-message: ${JMS_MAX_MESSAGE:1}
 
 server:
-  port: ${SERVER_PORT:8000}
+  port: ${SERVER_PORT:8080}
+
+client:
+  verify:
+    url: ${CLIENT_URL:http://localhost:8080/}
 
 logging:
   level:

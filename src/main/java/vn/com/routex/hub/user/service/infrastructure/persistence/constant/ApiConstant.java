@@ -9,4 +9,6 @@ public class ApiConstant {
     public static final String LOGIN = "/login";
     public static final String FORGET_PASSWORD = "/forget-password";
     public static final String VERIFY_CODE = "/verify";
+    public static final int OTP_LENGTH = 6;
+
 }
