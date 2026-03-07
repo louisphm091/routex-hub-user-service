@@ -24,10 +24,10 @@ public class EmailSendingRequest extends BaseRequest {
     @NoArgsConstructor
     @SuperBuilder
     public static class EmailSendingRequestData {
-        private String to;
-        private String username;
-        private String otpCode;
-        private String verifyUrl;
-        private OffsetDateTime expiredAt;
+        private String toEmail;
+        private String fullName;
+        private String verificationCode;
+        private Long expireMinutes;
+        private String userId;
     }
 }

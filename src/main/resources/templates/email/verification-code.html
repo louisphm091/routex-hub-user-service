@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Go Routex Verification Code</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
+<div style="max-width: 600px; margin: 0 auto; padding: 24px;">
+    <h2 style="color: #1a73e8;">Go Routex - Xác thực tài khoản</h2>
+
+    <p>Xin chào <strong th:text="${fullName}">Người dùng</strong>,</p>
+
+    <p>Cảm ơn bạn đã đăng ký tài khoản tại Go Routex.</p>
+
+    <p>Mã xác thực của bạn là:</p>
+
+    <div style="margin: 20px 0; padding: 16px; background: #f5f7fb; border-radius: 8px; text-align: center;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #1a73e8;"
+              th:text="${otpCode}">123456</span>
+    </div>
+
+    <p>
+        Hoặc bạn có thể xác thực tài khoản bằng cách click vào link bên dưới:
+    </p>
+
+    <p>
+        <a th:href="${verifyLink}"
+           style="padding:12px 20px;background:#1a73e8;color:white;text-decoration:none;border-radius:6px">
+            Verify Account
+        </a>
+    </p>
+
+    <p>Mã này sẽ hết hạn sau <strong th:text="${expiredMinutes}">5</strong> phút.</p>
+
+    <p>Vui lòng không chia sẻ mã này cho người khác.</p>
+
+    <p>Trân trọng,<br><strong>Go Routex</strong></p>
+</div>
+</body>
+</html>

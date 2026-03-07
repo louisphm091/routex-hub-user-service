@@ -1,16 +1,29 @@
 package vn.com.routex.hub.user.service.infrastructure.persistence.security;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import vn.com.routex.hub.user.service.application.service.impl.CustomUserDetailService;
+import vn.com.routex.hub.user.service.infrastructure.persistence.jwt.JwtAuthenticationFilter;
+import vn.com.routex.hub.user.service.infrastructure.persistence.jwt.JwtProperties;
 
 import java.util.List;
 
@@ -22,29 +35,57 @@ import static org.springframework.http.HttpMethod.PUT;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
+@EnableConfigurationProperties(JwtProperties.class)
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final ApiFilter apiFilter;
-
-    public SecurityConfig(ApiFilter apiFilter) {
-        this.apiFilter = apiFilter;
-    }
+    private final CustomUserDetailService userDetailService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(corsConfigurerCustomizer())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/v1/user-service/authentication/login",
+                                "/api/v1/user-service/authentication/register",
+                                "/api/v1/user-service/authentication/verify",
+                                "/api/v1/user-service/authentication/refresh",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
                                 "/actuator/**",
                                 "/error"
                         ).permitAll()
+                        .requestMatchers(GET, "/api/v1/user-service/public/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(apiFilter, BasicAuthenticationFilter.class)
-                .httpBasic(Customizer.withDefaults())
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(apiFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     private Customizer<CorsConfigurer<HttpSecurity>> corsConfigurerCustomizer() {

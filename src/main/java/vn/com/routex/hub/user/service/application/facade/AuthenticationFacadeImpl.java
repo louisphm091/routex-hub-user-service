@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import vn.com.routex.hub.user.service.application.service.AuthenticationService;
 import vn.com.routex.hub.user.service.infrastructure.persistence.exception.BusinessException;
 import vn.com.routex.hub.user.service.infrastructure.utils.ExceptionUtils;
+import vn.com.routex.hub.user.service.interfaces.models.login.LoginRequest;
+import vn.com.routex.hub.user.service.interfaces.models.login.LoginResponse;
 import vn.com.routex.hub.user.service.interfaces.models.register.RegistrationRequest;
 import vn.com.routex.hub.user.service.interfaces.models.register.RegistrationResponse;
 import vn.com.routex.hub.user.service.interfaces.models.verify.VerifyCodeRequest;
@@ -40,5 +42,21 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
     @Override
     public ResponseEntity<VerifyCodeResponse> verifyOtpCode(VerifyCodeRequest request) {
         return null;
+    }
+
+    @Override
+    public ResponseEntity<LoginResponse> login(LoginRequest request) {
+        LoginResponse response = authenticationService.login(request);
+        if(response == null) {
+            throw new BusinessException(request.getRequestId(), request.getRequestDateTime(), request.getChannel(),
+                    ExceptionUtils.buildResultResponse(TIMEOUT_ERROR, TIMEOUT_ERROR_MESSAGE));
+        }
+        response.setRequestId(request.getRequestId());
+        response.setRequestDateTime(request.getRequestDateTime());
+        response.setChannel(request.getChannel());
+        if(response.getData() == null) {
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

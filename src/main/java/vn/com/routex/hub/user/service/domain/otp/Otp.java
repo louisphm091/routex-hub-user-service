@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import vn.com.routex.hub.user.service.domain.auditing.AbstractAuditingEntity;
 
 import java.time.OffsetDateTime;
 
@@ -23,7 +24,7 @@ import java.time.OffsetDateTime;
 @Builder
 @Entity
 @Table(name = "OTP")
-public class Otp {
+public class Otp extends AbstractAuditingEntity {
 
     @Id
     private String id;
@@ -36,6 +37,9 @@ public class Otp {
 
     @Column(name = "EMAIL", nullable = false)
     private String email;
+
+    @Column(name = "FULL_NAME", nullable = false)
+    private String fullName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "PURPOSE", nullable = false)

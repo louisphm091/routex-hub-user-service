@@ -28,5 +28,6 @@ public class OtpRequest extends BaseRequest {
         private String phoneNumber;
         private String email;
         private OtpPurpose purpose;
+        private String fullName;
     }
 }

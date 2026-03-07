@@ -2,7 +2,7 @@
 
 ## Overview
 
-RouteHub is a comprehensive transportation management platform designed to digitalize and optimize bus operator businesses.
+Go Routex is a comprehensive transportation management platform designed to digitalize and optimize bus operator businesses.
 
 The system supports end-to-end operations including:
 
@@ -12,7 +12,7 @@ The system supports end-to-end operations including:
 - Financial & operational reporting
 - Real-time monitoring & administration
 
-RouteHub is built with a microservices architecture, scalable infrastructure, and cloud-native deployment strategy.
+Go Routex is built with a microservices architecture, scalable infrastructure, and cloud-native deployment strategy.
 
 ---
 ### Core Principles
@@ -28,19 +28,19 @@ RouteHub is built with a microservices architecture, scalable infrastructure, an
 
 ## Repository Structure
 
-The RouteHub ecosystem consists of multiple repositories organized by domain and responsibility.
+The Go Routex ecosystem consists of multiple repositories organized by domain and responsibility.
 
 ### Backend Services
 
-| Repository | Description |
-|------------|------------|
-| routex-hub-user-service | User management, authentication, role & permission |
-| routex-hub-driver-service | Driver profile, availability, and operations |
-| routex-hub-trip-service | Trip scheduling and route management |
-| routex-hub-booking-service | Passenger booking & ticket handling |
-| routex-hub-payment-service | Payment integration & transaction processing |
-| routex-hub-gateway | API Gateway & request routing |
-| routex-hub-config | Centralized configuration management |
+| Repository                  | Description |
+|-----------------------------|------------|
+| go-routex-user-service      | User management, authentication, role & permission |
+| go-routex-driver-service    | Driver profile, availability, and operations |
+| go-routex-trip-service      | Trip scheduling and route management |
+| go-routex-booking-service   | Passenger booking & ticket handling |
+| go-routex-payment-service   | Payment integration & transaction processing |
+| go-routex-gateway-adapter   | API Gateway & request routing |
+| go-routex-deployment-config | Centralized configuration management |
 
 ---
 
@@ -59,7 +59,7 @@ The RouteHub ecosystem consists of multiple repositories organized by domain and
 
 | Repository | Description |
 |------------|------------|
-| routex-hub-deployment-config | GitOps deployment configuration |
+| go-routex-deployment-config | GitOps deployment configuration |
 | CI/CD Pipelines | Automated build, tag, release & deployment |
 | Kubernetes Manifests | Cluster deployment resources |
 
@@ -80,7 +80,7 @@ The RouteHub ecosystem consists of multiple repositories organized by domain and
 - React Native / Expo
 
 ### Frontend Web
-- React / Next.js
+- React
 
 ### DevOps
 - Docker
@@ -101,7 +101,7 @@ The RouteHub ecosystem consists of multiple repositories organized by domain and
 
 ## Deployment Strategy
 
-RouteHub follows a GitOps-based deployment model:
+Go Routex follows a GitOps-based deployment model:
 
 1. Code merged into `master`
 2. CI auto-build & auto-tag
@@ -119,7 +119,7 @@ RouteHub follows a GitOps-based deployment model:
 
 ## Core Business Domains
 
-RouteHub manages the following core entities:
+Go Routex manages the following core entities:
 
 - Users (Admin / Staff / Customer)
 - Drivers

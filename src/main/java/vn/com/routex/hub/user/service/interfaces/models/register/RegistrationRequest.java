@@ -1,5 +1,6 @@
 package vn.com.routex.hub.user.service.interfaces.models.register;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,9 @@ import static vn.com.routex.hub.user.service.infrastructure.persistence.constant
 @NoArgsConstructor
 @SuperBuilder
 public class RegistrationRequest extends BaseRequest {
+
+    @Valid
+    @NotNull
     private RegistrationRequestData data;
 
     @Getter
@@ -33,7 +37,7 @@ public class RegistrationRequest extends BaseRequest {
         @NotNull
         @NotBlank
         @Size(min = 3, max = 20)
-        private String userName;
+        private String username;
 
         @NotNull
         @NotBlank
@@ -63,9 +67,7 @@ public class RegistrationRequest extends BaseRequest {
         private String dob;
 
         private String language;
-
         private String tenantId;
-
         private String timeZone;
     }
 }

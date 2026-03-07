@@ -6,6 +6,7 @@ public class ApiConstant {
     public static final String USER_SERVICE = "/user-service";
     public static final String AUTHENTICATION = "/authentication";
     public static final String REGISTER = "/register";
+    public static final String PROFILE_ME_PATH = "/profile/me";
     public static final String LOGIN = "/login";
     public static final String FORGET_PASSWORD = "/forget-password";
     public static final String VERIFY_CODE = "/verify";

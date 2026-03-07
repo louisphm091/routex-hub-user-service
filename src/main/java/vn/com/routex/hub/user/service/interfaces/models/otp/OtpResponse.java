@@ -1,4 +1,4 @@
-package vn.com.routex.hub.user.service.interfaces.models.register;
+package vn.com.routex.hub.user.service.interfaces.models.otp;
 
 
 import lombok.AllArgsConstructor;
@@ -8,26 +8,25 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import vn.com.routex.hub.user.service.interfaces.models.base.BaseResponse;
 
-import java.time.OffsetDateTime;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class RegistrationResponse extends BaseResponse {
-    private RegistrationResponseData data;
+public class OtpResponse extends BaseResponse {
+
+    private OtpResponseData data;
 
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @SuperBuilder
-    public static class RegistrationResponseData {
-        private String userName;
+    public static class OtpResponseData {
+        private String plainOtp;
+        private String fullName;
         private String email;
-        private String phoneNumber;
         private String userId;
-        private String status;
+        private Long expiresMinutes;
     }
 }

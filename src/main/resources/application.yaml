@@ -1,7 +1,7 @@
 spring:
 
   application:
-    name: routex-hub-user-service
+    name: go-routex-user-service
 
   threads:
     virtual:
@@ -80,6 +80,32 @@ server:
 client:
   verify:
     url: ${CLIENT_URL:http://localhost:8080/}
+
+
+identity:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token-expiration-minutes: 60
+    refresh-token-expiration-days: 7
+    issuer: ${JWT_ISSUER:user-service}
+
+
+notification:
+  email:
+    provider: sendgrid
+    sendgrid:
+      baseUrl: ${BASE_URL:http://localhost:8000/}
+      api-key: ${SENDGRID_API_KEY}
+      from-email: ${SENDGRID_FROM_EMAIL:simon@routex-go.com}
+      from-name: ${SENDGRID_FROM_NAME:Go-Routex}
+      verify-subject: ${SENDGRID_VERIFY_SUBJECT:Registration Form - Verify your Email}
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
 
 logging:
   level:

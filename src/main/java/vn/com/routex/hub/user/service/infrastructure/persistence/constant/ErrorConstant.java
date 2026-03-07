@@ -25,6 +25,8 @@ public class ErrorConstant {
     public static final String DUPLICATE_ERROR = "9400";
     public static final String RECORD_EXISTS = "Record already exists";
     public static final String USER_EXISTS = "User already exists";
+    public static final String USERNAME_EXISTS = "Username already exists";
+    public static final String PHONE_NUMBER_EXISTS = "Phone Number already exists";
     public static final String OTP_COOL_DOWN = "2600";
     public static final String OTP_COOL_DOWN_MESSAGE = "You need to wait for 2 minutes before retry";
 }
