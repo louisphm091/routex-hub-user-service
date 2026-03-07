@@ -32,15 +32,15 @@ The Go Routex ecosystem consists of multiple repositories organized by domain an
 
 ### Backend Services
 
-| Repository | Description |
-|------------|------------|
-| routex-hub-user-service | User management, authentication, role & permission |
-| routex-hub-driver-service | Driver profile, availability, and operations |
-| routex-hub-trip-service | Trip scheduling and route management |
-| routex-hub-booking-service | Passenger booking & ticket handling |
-| routex-hub-payment-service | Payment integration & transaction processing |
-| routex-hub-gateway | API Gateway & request routing |
-| routex-hub-config | Centralized configuration management |
+| Repository                  | Description |
+|-----------------------------|------------|
+| go-routex-user-service      | User management, authentication, role & permission |
+| go-routex-driver-service    | Driver profile, availability, and operations |
+| go-routex-trip-service      | Trip scheduling and route management |
+| go-routex-booking-service   | Passenger booking & ticket handling |
+| go-routex-payment-service   | Payment integration & transaction processing |
+| go-routex-gateway-adapter   | API Gateway & request routing |
+| go-routex-deployment-config | Centralized configuration management |
 
 ---
 
@@ -59,7 +59,7 @@ The Go Routex ecosystem consists of multiple repositories organized by domain an
 
 | Repository | Description |
 |------------|------------|
-| routex-hub-deployment-config | GitOps deployment configuration |
+| go-routex-deployment-config | GitOps deployment configuration |
 | CI/CD Pipelines | Automated build, tag, release & deployment |
 | Kubernetes Manifests | Cluster deployment resources |
 
@@ -80,7 +80,7 @@ The Go Routex ecosystem consists of multiple repositories organized by domain an
 - React Native / Expo
 
 ### Frontend Web
-- React / Next.js
+- React
 
 ### DevOps
 - Docker
