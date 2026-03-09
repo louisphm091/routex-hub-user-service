@@ -21,7 +21,6 @@ public class ErrorConstant {
 
     public static final String REFRESH_TOKEN_EXPIRED_MESSAGE = "Refresh token is expired";
     public static final String INVALID_HTTP_REQUEST_RESOURCE_ERROR = "4000";
-
     public static final String INVALID_HTTP_REQUEST_RESOURCE_ERROR_MESSAGE = "Resource %s path is not exists";
 
     public static final String INVALID_INPUT_ERROR = "0310";
@@ -40,6 +39,7 @@ public class ErrorConstant {
     public static final String USER_EXISTS = "User already exists";
     public static final String USERNAME_EXISTS = "Username already exists";
     public static final String PHONE_NUMBER_EXISTS = "Phone Number already exists";
+    public static final String ROLE_NOT_FOUND_ERROR = "Role %s not found";
     public static final String OTP_COOL_DOWN = "2600";
     public static final String OTP_FAIL_ATTEMPTS = "Error ! You just attempted more than 5 times.";
     public static final String OTP_NOT_ACTIVE = "Your OTP Code is not active";

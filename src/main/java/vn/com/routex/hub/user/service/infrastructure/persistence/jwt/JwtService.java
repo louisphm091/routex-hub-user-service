@@ -5,8 +5,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
-import vn.com.routex.hub.user.service.domain.user.Authorities;
-import vn.com.routex.hub.user.service.domain.user.AuthoritiesRepository;
+import vn.com.routex.hub.user.service.application.service.authorization.UserAuthorizationService;
+import vn.com.routex.hub.user.service.domain.role.AuthoritiesRepository;
 import vn.com.routex.hub.user.service.domain.user.User;
 
 import javax.crypto.SecretKey;
@@ -16,22 +16,23 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
+
 public class JwtService {
 
     private final JwtProperties jwtProperties;
     private final SecretKey secretKey;
     private final AuthoritiesRepository authoritiesRepository;
+    private final UserAuthorizationService userAuthorizationService;
 
-    public JwtService(JwtProperties jwtProperties, AuthoritiesRepository authoritiesRepository) {
+    public JwtService(JwtProperties jwtProperties, AuthoritiesRepository authoritiesRepository, UserAuthorizationService userAuthorizationService) {
         this.jwtProperties = jwtProperties;
         this.secretKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
         this.authoritiesRepository = authoritiesRepository;
+        this.userAuthorizationService = userAuthorizationService;
     }
     /*
     * Map<String, Object> claims = new HashMap();
@@ -41,15 +42,14 @@ public class JwtService {
         Instant now = Instant.now();
         Instant expiry = now.plus(jwtProperties.getAccessTokenExpirationMinutes(), ChronoUnit.MINUTES);
 
-        List<Authorities> authorities = authoritiesRepository.findByUserId(user.getId());
 
-        Set<String> roles = authorities.stream()
-                .map(Authorities::getRole)
-                .collect(Collectors.toSet());
+        Set<String> roles = userAuthorizationService.getRoles(user.getId());
+        Set<String> authorities = userAuthorizationService.getAuthorities(user.getId());
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", roles);
         claims.put("username", user.getUsername());
+        claims.put("roles", roles);
+        claims.put("authorities", authorities);
 
         return Jwts.builder()
                 .issuer(jwtProperties.getIssuer())

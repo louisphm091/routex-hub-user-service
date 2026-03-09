@@ -1,4 +1,4 @@
-package vn.com.routex.hub.user.service.application.service.impl;
+package vn.com.routex.hub.user.service.application.service.email;
 
 import com.sendgrid.Method;
 import com.sendgrid.Request;
@@ -10,15 +10,10 @@ import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
-import vn.com.routex.hub.user.service.application.service.EmailService;
-import vn.com.routex.hub.user.service.application.service.EmailTemplateService;
 import vn.com.routex.hub.user.service.infrastructure.persistence.config.SendGridMailProperties;
 import vn.com.routex.hub.user.service.interfaces.models.email.EmailSendingRequest;
-import vn.com.routex.hub.user.service.interfaces.models.register.RegistrationRequest;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package vn.com.routex.hub.user.service.application.service;
+package vn.com.routex.hub.user.service.application.service.email;
 
 
 import lombok.RequiredArgsConstructor;

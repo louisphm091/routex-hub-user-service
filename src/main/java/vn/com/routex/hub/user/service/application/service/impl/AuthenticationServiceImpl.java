@@ -3,26 +3,30 @@ package vn.com.routex.hub.user.service.application.service.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.com.routex.hub.user.service.application.service.AuthenticationService;
-import vn.com.routex.hub.user.service.application.service.EmailService;
 import vn.com.routex.hub.user.service.application.service.VerificationService;
+import vn.com.routex.hub.user.service.application.service.authorization.UserAuthorizationService;
+import vn.com.routex.hub.user.service.application.service.email.EmailService;
 import vn.com.routex.hub.user.service.domain.otp.Otp;
 import vn.com.routex.hub.user.service.domain.otp.OtpPurpose;
 import vn.com.routex.hub.user.service.domain.otp.OtpRepository;
 import vn.com.routex.hub.user.service.domain.otp.OtpStatus;
+import vn.com.routex.hub.user.service.domain.role.AuthoritiesRepository;
+import vn.com.routex.hub.user.service.domain.role.Roles;
+import vn.com.routex.hub.user.service.domain.role.RolesList;
+import vn.com.routex.hub.user.service.domain.role.RolesRepository;
+import vn.com.routex.hub.user.service.domain.role.UserRoleId;
+import vn.com.routex.hub.user.service.domain.role.UserRoles;
+import vn.com.routex.hub.user.service.domain.role.UserRolesRepository;
 import vn.com.routex.hub.user.service.domain.token.RefreshToken;
 import vn.com.routex.hub.user.service.domain.token.RefreshTokenRepository;
 import vn.com.routex.hub.user.service.domain.token.RefreshTokenStatus;
-import vn.com.routex.hub.user.service.domain.user.Authorities;
-import vn.com.routex.hub.user.service.domain.user.AuthoritiesRepository;
 import vn.com.routex.hub.user.service.domain.user.User;
 import vn.com.routex.hub.user.service.domain.user.UserRepository;
-import vn.com.routex.hub.user.service.domain.user.UserRoles;
 import vn.com.routex.hub.user.service.domain.user.UserStatus;
 import vn.com.routex.hub.user.service.infrastructure.persistence.constant.BusinessConstant;
 import vn.com.routex.hub.user.service.infrastructure.persistence.exception.BusinessException;
@@ -54,9 +58,9 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.BusinessConstant.MAX_ATTEMPTS_OTP;
+import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.AUTHORIZATION_ERROR;
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.CONFIRM_PASSWORD_NOT_MATCHED;
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.DUPLICATE_ERROR;
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
@@ -75,6 +79,7 @@ import static vn.com.routex.hub.user.service.infrastructure.persistence.constant
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.RECORD_NOT_FOUND_MESSAGE;
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.REFRESH_TOKEN_EXPIRED_MESSAGE;
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.REFRESH_TOKEN_NOT_FOUND_MESSAGE;
+import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.ROLE_NOT_FOUND_ERROR;
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.SUCCESS_CODE;
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.SUCCESS_MESSAGE;
 import static vn.com.routex.hub.user.service.infrastructure.persistence.constant.ErrorConstant.USERNAME_EXISTS;
@@ -88,7 +93,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     private final SystemLog sLog = SystemLog.getLogger(this.getClass());
-    private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final VerificationService verificationService;
@@ -97,6 +101,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RolesRepository rolesRepository;
+    private final UserRolesRepository userRolesRepository;
+    private final UserAuthorizationService userAuthorizationService;
+
+
 
     @Override
     @Transactional
@@ -143,13 +152,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .timezone(timezone != null ? request.getData().getTimeZone() : null)
                 .build();
 
-        Authorities userRoles = Authorities.builder()
-                        .userId(registeredUser.getId())
-                                .role(UserRoles.CUSTOMER.name())
-                                        .build();
-
-        authoritiesRepository.save(userRoles);
         userRepository.save(registeredUser);
+
+        Roles customerRole = rolesRepository.findByCode(RolesList.CUSTOMER.name())
+                        .orElseThrow(() -> new BusinessException(request.getRequestId(), request.getRequestDateTime(), request.getChannel(),
+                                ExceptionUtils.buildResultResponse(AUTHORIZATION_ERROR, String.format(ROLE_NOT_FOUND_ERROR, RolesList.CUSTOMER.name()))));
+
+        UserRoleId userRoleId = UserRoleId.builder()
+                .userId(registeredUser.getId())
+                .roleId(customerRole.getId())
+                .build();
+
+        UserRoles userRoles = UserRoles.builder()
+                .id(userRoleId)
+                .assignedAt(OffsetDateTime.now())
+                .build();
+
+        userRolesRepository.save(userRoles);
 
         generateOtpRequestAndSendMail(request, registeredUser, OtpPurpose.REGISTER_VERIFY);
         /*
@@ -217,7 +236,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         otp.setConsumedAt(OffsetDateTime.now());
         otp.setStatus(OtpStatus.USED);
+        otp.setUpdatedAt(OffsetDateTime.now());
         user.setStatus(UserStatus.ACTIVE);
+        user.setUpdatedAt(OffsetDateTime.now());
+        otpRepository.save(otp);
+        userRepository.save(user);
         sLog.info("[VERIFICATION] Your account is verified from now with UserId: {}", request.getData().getUserId());
 
         return VerifyCodeResponse.builder()
@@ -265,10 +288,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             );
         }
 
-        Set<String> roles = authoritiesRepository.findByUserId(user.getId())
-                .stream()
-                .map(Authorities::getRole)
-                .collect(Collectors.toSet());
+        Set<String> roles = userAuthorizationService.getRoles(user.getId());
+        Set<String> authorities = userAuthorizationService.getAuthorities(user.getId());
 
         // Generate new accessToken & refreshToken everytime login.
         OffsetDateTime now = OffsetDateTime.now();
@@ -276,6 +297,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String refreshToken = jwtService.generateRefreshToken(user);
 
         refreshTokenRepository.save(RefreshToken.builder()
+                .id(UUID.randomUUID().toString())
                 .userId(user.getId())
                 .token(refreshToken)
                 .status(RefreshTokenStatus.ACTIVE)
@@ -299,6 +321,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
                         .roles(roles)
+                        .authorities(authorities)
                         .build())
                 .build();
     }

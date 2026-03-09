@@ -60,6 +60,7 @@ public class VerificationServiceImpl implements VerificationService {
                 .otpHash(passwordEncoder.encode(plainOtp))
                 .status(OtpStatus.ACTIVE)
                 .attemptCount(0)
+                .createdAt(OffsetDateTime.now())
                 .purpose(OtpPurpose.REGISTER_VERIFY)
                 .expiredAt(OffsetDateTime.now().plusMinutes(EXPIRED_OTP_MINUTES))
                 .build();

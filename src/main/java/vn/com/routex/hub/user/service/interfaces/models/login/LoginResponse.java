@@ -23,5 +23,6 @@ public class LoginResponse extends BaseResponse<LoginResponse.LoginResponseData>
         private String userId;
         private String username;
         private Set<String> roles;
+        private Set<String> authorities;
     }
 }

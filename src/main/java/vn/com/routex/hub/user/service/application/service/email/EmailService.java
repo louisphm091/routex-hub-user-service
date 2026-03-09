@@ -1,4 +1,4 @@
-package vn.com.routex.hub.user.service.application.service;
+package vn.com.routex.hub.user.service.application.service.email;
 
 
 import vn.com.routex.hub.user.service.interfaces.models.email.EmailSendingRequest;

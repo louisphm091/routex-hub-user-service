@@ -1,4 +1,4 @@
-package vn.com.routex.hub.user.service.domain.user;
+package vn.com.routex.hub.user.service.domain.role;
 
 
 import jakarta.persistence.Column;
@@ -23,13 +23,18 @@ import vn.com.routex.hub.user.service.domain.auditing.AbstractAuditingEntity;
 @Table(name = "AUTHORITIES")
 public class Authorities extends AbstractAuditingEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private String id;
 
-    @Column(name = "USER_ID", nullable = false)
-    private String userId;
+    @Column(name = "CODE", nullable = false, unique = true)
+    private String code;
 
-    @Column(name = "ROLE", nullable = false)
-    private String role;
+    @Column(name = "NAME", nullable = false)
+    private String name;
+
+    @Column(name = "DESCRIPTION")
+    private String description;
+
+    @Column(name = "ENABLED")
+    private Boolean enabled;
 
 }
